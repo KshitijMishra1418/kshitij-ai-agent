@@ -1,6 +1,5 @@
 {
   "name": "kshitij-ai-agent",
   "version": "1.0.0",
-  "description": "AI Agent backend for kshitij.info",
-  "main": "api/chat.js"
+  "type": "module"
 }
