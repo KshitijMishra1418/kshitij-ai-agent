@@ -1,5 +1,5 @@
 // api/chat.js — Vercel Serverless Function
-// Proxies Claude API safely + emails conversation log to Kshitij
+// Fixed version — correct model + better error handling
 
 const SYSTEM_PROMPT = `You are Kshitij Mishra, an AI Quality Analyst based in Noida, India. You are representing yourself on your personal portfolio website kshitij.info. Recruiters and hiring managers are chatting with you directly.
 
@@ -16,6 +16,7 @@ PROFESSIONAL BACKGROUND:
 - Based in Noida, India
 - Open to hybrid (remote + office)
 - Open to relocate anywhere
+- Immediately available
 
 SKILLS:
 - AI & ML: LLM Evaluation, Prompt Testing, Output Validation, Hallucination Detection
@@ -65,8 +66,8 @@ STRICT RESPONSE RULES:
 8. Current job / certifications: "Please feel free to contact me directly to discuss"
 9. Why looking: "I love taking on new challenges and I am looking for an opportunity where I can push myself further"
 10. Projects: First ask "Which project would you like to know more about?" — then explain the chosen one in detail
-11. Resume: Share link AND suggest email — "Download at kshitij.info/Kshitij_Mishra_Resume.pdf — feel free to email me too at mkshitij007@gmail.com"
-12. Rude or irrelevant questions: "I'd love to keep our conversation focused on my professional background — happy to answer any questions about my skills or experience!"
+11. Resume: "You can download my resume at kshitij.info/Kshitij_Mishra_Resume.pdf — feel free to also email me at mkshitij007@gmail.com"
+12. Rude or irrelevant questions: Politely redirect — "I'd love to keep our conversation focused on my professional background — happy to answer any questions about my skills or experience!"
 13. NEVER make up facts not listed above
 14. Always end with a relevant follow-up question
 
@@ -74,7 +75,8 @@ CLOSING LINE (when recruiter says bye/thanks):
 "It was great connecting with you! I hope we get the chance to work together — feel free to reach out anytime at mkshitij007@gmail.com. Looking forward to hearing from you!"`;
 
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "https://kshitij.info");
+  // Allow all origins during testing, restrict to kshitij.info in production
+  res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
@@ -96,7 +98,7 @@ export default async function handler(req, res) {
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 1000,
         system: SYSTEM_PROMPT,
         messages: messages
@@ -104,11 +106,20 @@ export default async function handler(req, res) {
     });
 
     const data = await claudeRes.json();
+
+    // Log error details if Claude fails
+    if (data.error) {
+      console.error("Claude API error:", JSON.stringify(data.error));
+      return res.status(200).json({
+        reply: "I apologise, I am experiencing a technical issue. Please email me at mkshitij007@gmail.com!"
+      });
+    }
+
     const reply = data.content?.[0]?.text ||
-      "I apologise, I am having trouble responding right now. Please email me directly at mkshitij007@gmail.com!";
+      "I apologise, I could not generate a response. Please email me at mkshitij007@gmail.com!";
 
     // ── Email transcript when conversation ends ────────────────────────
-    if (sendLog && messages.length > 0) {
+    if (sendLog && messages.length > 0 && process.env.RESEND_API_KEY) {
       const transcript = messages.map(m =>
         `${m.role === "user" ? "Recruiter" : "Kshitij"}: ${m.content}`
       ).join("\n\n");
@@ -122,7 +133,7 @@ export default async function handler(req, res) {
           "Authorization": `Bearer ${process.env.RESEND_API_KEY}`
         },
         body: JSON.stringify({
-          from: "agent@kshitij.info",
+          from: "onboarding@resend.dev",
           to: "mkshitij007@gmail.com",
           subject: `Portfolio Chat — ${time}`,
           text: `New recruiter conversation on kshitij.info\n\nTime: ${time}\nMessages: ${messages.length}\n\n${"─".repeat(50)}\n\n${transcript}\n\n${"─".repeat(50)}\n\nSent automatically from your portfolio AI agent.`
@@ -133,8 +144,8 @@ export default async function handler(req, res) {
     return res.status(200).json({ reply });
 
   } catch (error) {
-    console.error("Error:", error);
-    return res.status(500).json({
+    console.error("Handler error:", error);
+    return res.status(200).json({
       reply: "I apologise, something went wrong. Please email me at mkshitij007@gmail.com!"
     });
   }
