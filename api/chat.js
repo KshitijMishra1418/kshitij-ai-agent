@@ -20,7 +20,7 @@ module.exports = async function handler(req, res) {
     const prompt = SYSTEM_PROMPT + "\n\nConversation:\n" + conversation + "\n\nRespond as Kshitij:";
 
     const geminiRes = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + process.env.AIzaSyDOD1_yoiBMg3cuVdcRYsSoP5MnUAwKzMA,
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + process.env.AIzaSyCJ5eBVFX8pJxckuAuGLm0PzdAwVHg36oM,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
