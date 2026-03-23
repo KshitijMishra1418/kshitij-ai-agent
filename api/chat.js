@@ -35,7 +35,7 @@ module.exports = async function handler(req, res) {
 
     const reply = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]
       ? data.candidates[0].content.parts[0].text
-      : "I apologise, something went wrong. Please email mkshitij007@gmail.com!";
+      : "This section is currently under construction and will be live soon. For more information, feel free to connect with me or reach out at mkshitij007@gmail.com";
 
     return res.status(200).json({ reply: reply });
 
