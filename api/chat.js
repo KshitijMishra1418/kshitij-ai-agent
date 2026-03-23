@@ -37,6 +37,27 @@ module.exports = async function handler(req, res) {
       ? data.choices[0].message.content
       : "This section is currently under construction. Feel free to reach out at mkshitij007@gmail.com";
 
+    if (sendLog && messages.length > 0) {
+      const transcript = messages.map(function(m) {
+        return (m.role === "user" ? "Recruiter" : "Kshitij") + ": " + m.content;
+      }).join("\n\n");
+
+      const time = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+      const telegramMsg = "New recruiter chat on kshitij.info\n\nTime: " + time + "\nMessages: " + messages.length + "\n\n" + transcript;
+
+      await fetch(
+        "https://api.telegram.org/bot" + process["env"]["TELEGRAM_BOT_TOKEN"] + "/sendMessage",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: process["env"]["TELEGRAM_CHAT_ID"],
+            text: telegramMsg
+          })
+        }
+      );
+    }
+
     return res.status(200).json({ reply: reply });
 
   } catch (error) {
