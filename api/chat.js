@@ -42,7 +42,7 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     console.error("Error:", error);
     return res.status(200).json({
-      reply: "I apologise, something went wrong. Please email mkshitij007@gmail.com!"
+      reply: "This section is currently under construction and will be live soon. For more information, feel free to connect with me or reach out at mkshitij007@gmail.com"
     });
   }
 };
