@@ -20,16 +20,8 @@ module.exports = async function handler(req, res) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: messages.map(function(m) {
-            return {
-              role: m.role === "assistant" ? "model" : "user",
-              parts: [{ text: m.content }]
-            };
-          })
-        })
-      }
-    );
+  contents: [{ role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\nConversation:\n" + messages.map(function(m) { return (m.role === "user" ? "Recruiter" : "Kshitij") + ": " + m.content; }).join("\n") + "\n\nRespond as Kshitij:" }] }]
+})
 
     const data = await geminiRes.json();
     const reply = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] ? data.candidates[0].content.parts[0].text : "I apologise, something went wrong. Please email mkshitij007@gmail.com!";
