@@ -37,7 +37,14 @@ module.exports = async function handler(req, res) {
       ? data.choices[0].message.content
       : "This section is currently under construction. Feel free to reach out at mkshitij007@gmail.com";
 
+    console.log("sendLog value:", sendLog);
+    console.log("messages length:", messages.length);
+
     if (sendLog && messages.length > 0) {
+      console.log("Attempting Telegram send...");
+      console.log("Token exists:", !!process["env"]["TELEGRAM_BOT_TOKEN"]);
+      console.log("Chat ID:", process["env"]["TELEGRAM_CHAT_ID"]);
+
       const transcript = messages.map(function(m) {
         return (m.role === "user" ? "Recruiter" : "Kshitij") + ": " + m.content;
       }).join("\n\n");
@@ -45,7 +52,7 @@ module.exports = async function handler(req, res) {
       const time = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
       const telegramMsg = "New recruiter chat on kshitij.info\n\nTime: " + time + "\nMessages: " + messages.length + "\n\n" + transcript;
 
-      await fetch(
+      const telegramRes = await fetch(
         "https://api.telegram.org/bot" + process["env"]["TELEGRAM_BOT_TOKEN"] + "/sendMessage",
         {
           method: "POST",
@@ -56,6 +63,9 @@ module.exports = async function handler(req, res) {
           })
         }
       );
+
+      const telegramData = await telegramRes.json();
+      console.log("Telegram result:", JSON.stringify(telegramData));
     }
 
     return res.status(200).json({ reply: reply });
