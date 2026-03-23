@@ -15,7 +15,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const geminiRes = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + process.env.AIzaSyDOD1_yoiBMg3cuVdcRYsSoP5MnUAwKzMA,"
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + process.env.AIzaSyDOD1_yoiBMg3cuVdcRYsSoP5MnUAwKzMA,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
